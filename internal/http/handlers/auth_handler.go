@@ -9,12 +9,12 @@ import (
 )
 
 type AuthHandler struct {
-	Auth    *service.AuthService
-	Session *service.SessionService
+	auth    *service.AuthService
+	session *service.SessionService
 }
 
 func NewAuthHandler(auth *service.AuthService, session *service.SessionService) *AuthHandler {
-	return &AuthHandler{Auth: auth, Session: session}
+	return &AuthHandler{auth: auth, session: session}
 }
 
 func (h *AuthHandler) Login(c echo.Context) error {
@@ -30,13 +30,13 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		})
 	}
 
-	user, err := h.Auth.Login(req.Email, req.Password)
+	user, err := h.auth.Login(req.Email, req.Password)
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"login_error": err.Error()})
 	}
 
-	errSession := h.Session.SetAuthUserSession(c, user)
+	errSession := h.session.SetAuthUserSession(c, user)
 
 	if errSession != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "failed to create session"})
@@ -58,7 +58,7 @@ func (h *AuthHandler) Registration(c echo.Context) error {
 		})
 	}
 
-	user, err := h.Auth.Register(req.Login, req.Email, req.Password)
+	user, err := h.auth.Register(req.Login, req.Email, req.Password)
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{
@@ -66,7 +66,7 @@ func (h *AuthHandler) Registration(c echo.Context) error {
 		})
 	}
 
-	errSession := h.Session.SetAuthUserSession(c, user)
+	errSession := h.session.SetAuthUserSession(c, user)
 
 	if errSession != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "failed to create session"})
@@ -77,7 +77,7 @@ func (h *AuthHandler) Registration(c echo.Context) error {
 
 func (h *AuthHandler) Logout(c echo.Context) error {
 
-	errSession := h.Session.ClearSession(c)
+	errSession := h.session.ClearSession(c)
 
 	if errSession != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "failed to clear session"})

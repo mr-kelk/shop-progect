@@ -7,5 +7,6 @@ import (
 )
 
 func GetAuthUser(c echo.Context) error {
-	return c.String(http.StatusOK, "GetAuthUser")
+	user := c.Get("authUser")
+	return c.JSON(http.StatusOK, user)
 }

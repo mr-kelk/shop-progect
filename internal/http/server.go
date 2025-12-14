@@ -5,6 +5,7 @@ import (
 	"example/shop-progect/config"
 	"example/shop-progect/internal/database"
 	"example/shop-progect/internal/http/handlers"
+	m "example/shop-progect/internal/http/middleware"
 	"example/shop-progect/internal/http/validator"
 	"example/shop-progect/internal/repository"
 	"example/shop-progect/internal/service"
@@ -37,17 +38,23 @@ func StartHttp() {
 		service.NewSessionService(),
 	)
 
+	productHandler := handlers.NewProductHandler(
+		service.NewProductService(
+			repository.NewProductRepository(database.DB)),
+	)
+
 	authGroup := e.Group("/auth")
 	authGroup.POST("/login", authHandler.Login)
 	authGroup.POST("/registration", authHandler.Registration)
 	authGroup.POST("/logout", authHandler.Logout)
 
-	userGroup := e.Group("/user")
+	userGroup := e.Group("/user", m.AuthRequired)
 	userGroup.GET("", handlers.GetAuthUser)
 
-	productGroup := e.Group("/product")
-	productGroup.GET("/list", handlers.GetProducts)
-	productGroup.GET("/:uuid", handlers.GetProductByUUID)
+	productGroup := e.Group("/product", m.AuthRequired)
+	productGroup.GET("/list", productHandler.GetProducts)
+	productGroup.GET("/:uuid", productHandler.GetProductByUUID)
+	productGroup.POST("/add", productHandler.AddProduct)
 
 	addr := net.JoinHostPort(config.Cfg.AppHost, strconv.Itoa(config.Cfg.AppPort))
 

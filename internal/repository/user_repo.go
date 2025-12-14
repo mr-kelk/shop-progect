@@ -6,15 +6,15 @@ import (
 )
 
 type UserRepository struct {
-	DB *sql.DB
+	db *sql.DB
 }
 
 func NewUserRepository(db *sql.DB) *UserRepository {
-	return &UserRepository{DB: db}
+	return &UserRepository{db: db}
 }
 
 func (r *UserRepository) GetRoleByName(name string) (*model.RoleModel, error) {
-	row := r.DB.QueryRow(`
+	row := r.db.QueryRow(`
         SELECT r.ID, r.NAME
 		FROM  SHOP.ROLES r
 		WHERE r.NAME = :1
@@ -32,7 +32,7 @@ func (r *UserRepository) GetRoleByName(name string) (*model.RoleModel, error) {
 func (r *UserRepository) GetUserByEmail(email string) (*model.UserModel, error) {
 	var userModel model.UserModel
 
-	err := r.DB.QueryRow(`
+	err := r.db.QueryRow(`
         SELECT U.ID, U.LOGIN, U.EMAIL, U.PASSWORD, R.NAME AS ROLE_NAME
 		FROM  SHOP.USERS U
 		LEFT JOIN SHOP.ROLES R on R.ID = U.ROLE_ID
@@ -47,6 +47,6 @@ func (r *UserRepository) GetUserByEmail(email string) (*model.UserModel, error) 
 }
 
 func (r *UserRepository) CreateUser(login string, email string, password string, roleId int) error {
-	_, err := r.DB.Exec(`INSERT INTO SHOP.USERS (LOGIN, EMAIL, PASSWORD, ROLE_ID) VALUES (:1, :2, :3, :4)`, login, email, password, roleId)
+	_, err := r.db.Exec(`INSERT INTO SHOP.USERS (LOGIN, EMAIL, PASSWORD, ROLE_ID) VALUES (:1, :2, :3, :4)`, login, email, password, roleId)
 	return err
 }

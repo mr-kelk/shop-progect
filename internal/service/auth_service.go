@@ -10,11 +10,11 @@ import (
 )
 
 type AuthService struct {
-	Users *repository.UserRepository
+	user *repository.UserRepository
 }
 
 func NewAuthService(repo *repository.UserRepository) *AuthService {
-	return &AuthService{Users: repo}
+	return &AuthService{user: repo}
 }
 
 func isPasswordVerification(hashedPassword []byte, password []byte) (bool, error) {
@@ -35,7 +35,7 @@ func hashPassword(password string) (string, error) {
 }
 
 func (s *AuthService) Login(email string, password string) (*model.UserPublic, error) {
-	user, err := s.Users.GetUserByEmail(email)
+	user, err := s.user.GetUserByEmail(email)
 
 	if err != nil || user == nil {
 		return nil, errors.New("user not found")
@@ -51,7 +51,7 @@ func (s *AuthService) Login(email string, password string) (*model.UserPublic, e
 }
 
 func (s *AuthService) Register(login string, email string, password string) (*model.UserPublic, error) {
-	user, err := s.Users.GetUserByEmail(email)
+	user, err := s.user.GetUserByEmail(email)
 
 	if user != nil {
 		return nil, errors.New("user already exists")
@@ -61,15 +61,17 @@ func (s *AuthService) Register(login string, email string, password string) (*mo
 		return nil, errors.New("user with email already exists")
 	}
 
-	role, _ := s.Users.GetRoleByName(enum.USER)
+	role, _ := s.user.GetRoleByName(enum.USER)
 
 	hashed, _ := hashPassword(password)
 
-	err = s.Users.CreateUser(login, email, hashed, role.ID)
+	err = s.user.CreateUser(login, email, hashed, role.ID)
 
 	if err != nil || user == nil {
 		return nil, errors.New("user not created")
 	}
+
+	user, err = s.user.GetUserByEmail(email)
 
 	return user.Public(), nil
 }
