@@ -26,6 +26,20 @@ func (*ProductHandler) GetProductByUUID(c echo.Context) error {
 	return c.String(http.StatusOK, "product "+uuid)
 }
 
+func (*ProductHandler) DelProductByUUID(c echo.Context) error {
+	uuid := c.Param("uuid")
+	return c.String(http.StatusOK, "product "+uuid)
+}
+
+func (*ProductHandler) UpdateProductByUUID(c echo.Context) error {
+	uuid := c.Param("uuid")
+	return c.String(http.StatusOK, "product "+uuid)
+}
+
+func (h *ProductHandler) DelMultipleProducts(c echo.Context) error {
+	return c.String(http.StatusOK, "product ")
+}
+
 func (h *ProductHandler) AddProduct(c echo.Context) error {
 	req := new(dto.AddProduct)
 
@@ -39,7 +53,9 @@ func (h *ProductHandler) AddProduct(c echo.Context) error {
 		})
 	}
 
-	err := h.product.CreateProduct()
+	//user := c.Get("authUser").(*model.UserPublic)
+
+	err := h.product.CreateProduct(req.SKU, req.Name, req.ProductTypeID, "ewwwe")
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{

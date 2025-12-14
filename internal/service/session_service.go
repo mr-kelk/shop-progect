@@ -14,7 +14,7 @@ func NewSessionService() *SessionService {
 	return &SessionService{}
 }
 
-func (s *SessionService) SetAuthUserSession(c echo.Context, user *model.UserPublic) error {
+func (s *SessionService) SetAuthUserSession(c echo.Context, user *model.UserSess) error {
 	sess, _ := session.Get("session", c)
 
 	sess.Options = &sessions.Options{
@@ -23,7 +23,10 @@ func (s *SessionService) SetAuthUserSession(c echo.Context, user *model.UserPubl
 		HttpOnly: true,
 	}
 
-	sess.Values["auth"] = user
+	sess.Values["auth_id"] = user.ID
+	sess.Values["auth_login"] = user.Login
+	sess.Values["auth_email"] = user.Email
+	sess.Values["auth_role_name"] = user.RoleName
 
 	return sess.Save(c.Request(), c.Response())
 }

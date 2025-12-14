@@ -13,7 +13,7 @@ func NewProductRepository(db *sql.DB) *ProductRepository {
 	return &ProductRepository{db: db}
 }
 
-func (r *ProductRepository) AddProduct(sku string, name string, productTypeId string, imageUrl string, createdBy string) error {
+func (r *ProductRepository) AddProduct(sku string, name string, productTypeId int, imageUrl string, createdBy string) error {
 	//var productID []byte
 
 	//test := r.db.QueryRow(

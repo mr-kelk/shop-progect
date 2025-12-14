@@ -5,5 +5,4 @@ type AddProduct struct {
 	Name          string `json:"name"`
 	Stock         int    `json:"stock"`
 	ProductTypeID int    `json:"product_type_id"`
-	ImageURL      string `json:"image_url"`
 }

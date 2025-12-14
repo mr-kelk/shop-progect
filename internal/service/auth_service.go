@@ -34,7 +34,7 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-func (s *AuthService) Login(email string, password string) (*model.UserPublic, error) {
+func (s *AuthService) Login(email string, password string) (*model.UserSess, error) {
 	user, err := s.user.GetUserByEmail(email)
 
 	if err != nil || user == nil {
@@ -50,7 +50,7 @@ func (s *AuthService) Login(email string, password string) (*model.UserPublic, e
 	return user.Public(), nil
 }
 
-func (s *AuthService) Register(login string, email string, password string) (*model.UserPublic, error) {
+func (s *AuthService) Register(login string, email string, password string) (*model.UserSess, error) {
 	user, err := s.user.GetUserByEmail(email)
 
 	if user != nil {

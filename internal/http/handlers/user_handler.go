@@ -1,12 +1,13 @@
 package handlers
 
 import (
+	"example/shop-progect/internal/model"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
 func GetAuthUser(c echo.Context) error {
-	user := c.Get("authUser")
-	return c.JSON(http.StatusOK, user)
+	userAny := c.Get("authUser").(*model.UserSess)
+	return c.JSON(http.StatusOK, userAny.ID)
 }
