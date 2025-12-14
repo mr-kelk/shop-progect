@@ -1,0 +1,25 @@
+CREATE TABLE PRODUCTS
+(
+    ID              RAW(16) DEFAULT SYS_GUID() PRIMARY KEY,
+    SKU             VARCHAR2(100)           NOT NULL UNIQUE,
+    NAME            VARCHAR2(255)           NOT NULL,
+    STOCK           NUMBER  DEFAULT 0,
+    PRODUCT_TYPE_ID NUMBER                  NOT NULL,
+    IMAGE_URL       VARCHAR2(500),
+    CREATED_AT      DATE    DEFAULT SYSDATE NOT NULL,
+    UPDATED_AT      DATE,
+    CREATED_BY      RAW(16)                 NOT NULL, -- кто создал
+    UPDATED_BY      RAW(16),                          -- кто изменил
+
+    CONSTRAINT FK_PRODUCTS_PRODUCT_TYPE
+        FOREIGN KEY (PRODUCT_TYPE_ID)
+            REFERENCES PRODUCT_TYPES (ID),
+
+    CONSTRAINT FK_PRODUCTS_CREATED_BY
+        FOREIGN KEY (CREATED_BY)
+            REFERENCES USERS (ID),
+
+    CONSTRAINT FK_PRODUCTS_UPDATED_BY
+        FOREIGN KEY (UPDATED_BY)
+            REFERENCES USERS (ID)
+);
