@@ -56,7 +56,7 @@ func StartHttp() {
 	productGroup.GET("/:uuid", productHandler.GetProductByUUID)
 	productGroup.DELETE("/:uuid", productHandler.DelProductByUUID)
 	productGroup.DELETE("/multiple", productHandler.DelMultipleProducts)
-	productGroup.POST("/:uuid", productHandler.UpdateProductByUUID)
+	productGroup.PUT("/:uuid", productHandler.UpdateProductByUUID)
 	productGroup.POST("/add", productHandler.AddProduct)
 
 	addr := net.JoinHostPort(config.Cfg.AppHost, strconv.Itoa(config.Cfg.AppPort))

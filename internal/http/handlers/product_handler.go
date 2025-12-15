@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"database/sql"
+	"errors"
 	"example/shop-progect/internal/http/validator/dto"
 	"example/shop-progect/internal/model"
 	"example/shop-progect/internal/service"
@@ -18,8 +20,14 @@ func NewProductHandler(product *service.ProductService) *ProductHandler {
 }
 
 func (h *ProductHandler) GetProducts(c echo.Context) error {
-	h.product.GetListProduct()
-	return c.JSON(http.StatusOK, "product list")
+	products, err := h.product.GetListProduct()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, products)
 }
 
 func (*ProductHandler) GetProductByUUID(c echo.Context) error {
@@ -27,9 +35,23 @@ func (*ProductHandler) GetProductByUUID(c echo.Context) error {
 	return c.String(http.StatusOK, "product "+uuid)
 }
 
-func (*ProductHandler) DelProductByUUID(c echo.Context) error {
-	uuid := c.Param("uuid")
-	return c.String(http.StatusOK, "product "+uuid)
+func (h *ProductHandler) DelProductByUUID(c echo.Context) error {
+	id := c.Param("uuid")
+
+	err := h.product.DeleteProduct(id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return c.JSON(http.StatusNotFound, echo.Map{
+				"error": "product not found",
+			})
+		}
+
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.NoContent(http.StatusNoContent)
 }
 
 func (*ProductHandler) UpdateProductByUUID(c echo.Context) error {
@@ -38,6 +60,30 @@ func (*ProductHandler) UpdateProductByUUID(c echo.Context) error {
 }
 
 func (h *ProductHandler) DelMultipleProducts(c echo.Context) error {
+	req := new(dto.DelMultipleProducts)
+
+	if err := c.Bind(req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request body"})
+	}
+
+	if err := c.Validate(req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"validation_error": err.Error(),
+		})
+	}
+
+	deleted, err := h.product.DeleteMultipleProducts(req.IDs)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"deleted": deleted,
+	})
+
 	return c.String(http.StatusOK, "product ")
 }
 
@@ -56,7 +102,7 @@ func (h *ProductHandler) AddProduct(c echo.Context) error {
 
 	user := c.Get("authUser").(*model.UserSess)
 
-	err := h.product.CreateProduct(req.SKU, req.Name, req.ProductTypeID, user.ID)
+	err := h.product.CreateProduct(req.SKU, req.Name, req.Stock, req.ProductTypeID, user.ID)
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{
@@ -64,5 +110,5 @@ func (h *ProductHandler) AddProduct(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, "product add")
+	return c.JSON(http.StatusCreated, "product add")
 }

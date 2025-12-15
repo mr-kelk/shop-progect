@@ -67,11 +67,11 @@ func (s *AuthService) Register(login string, email string, password string) (*mo
 
 	err = s.user.CreateUser(login, email, hashed, role.ID)
 
-	if err != nil || user == nil {
+	if err != nil {
 		return nil, errors.New("user not created")
 	}
 
-	user, err = s.user.GetUserByEmail(email)
+	user, _ = s.user.GetUserByEmail(email)
 
 	return user.Public(), nil
 }
