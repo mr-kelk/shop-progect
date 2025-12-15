@@ -16,7 +16,6 @@ func (s *ProductService) GetListProduct() {
 
 }
 
-// TODO: В разработке
 func (s *ProductService) CreateProduct(sku string, name string, productTypeId int, createdBy string) error {
 	err := s.product.AddProduct(sku, name, productTypeId, "", createdBy)
 	return err

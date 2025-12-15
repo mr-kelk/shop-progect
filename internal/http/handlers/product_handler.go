@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"example/shop-progect/internal/http/validator/dto"
+	"example/shop-progect/internal/model"
 	"example/shop-progect/internal/service"
 	"net/http"
 
@@ -53,9 +54,9 @@ func (h *ProductHandler) AddProduct(c echo.Context) error {
 		})
 	}
 
-	//user := c.Get("authUser").(*model.UserPublic)
+	user := c.Get("authUser").(*model.UserSess)
 
-	err := h.product.CreateProduct(req.SKU, req.Name, req.ProductTypeID, "ewwwe")
+	err := h.product.CreateProduct(req.SKU, req.Name, req.ProductTypeID, user.ID)
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{
