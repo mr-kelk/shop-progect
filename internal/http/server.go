@@ -4,6 +4,7 @@ import (
 	"errors"
 	"example/shop-progect/config"
 	"example/shop-progect/internal/database"
+	"example/shop-progect/internal/enum"
 	"example/shop-progect/internal/http/handlers"
 	m "example/shop-progect/internal/http/middleware"
 	"example/shop-progect/internal/http/validator"
@@ -55,11 +56,11 @@ func StartHttp() {
 	productGroup.GET("/list", productHandler.GetProducts)
 	productGroup.GET("/:uuid", productHandler.GetProductByUUID)
 
-	productGroup.DELETE("/:uuid", productHandler.DelProductByUUID)
-	productGroup.DELETE("/multiple", productHandler.DelMultipleProducts)
+	productGroup.DELETE("/:uuid", productHandler.DelProductByUUID, m.RoleRequired(enum.ADMIN))
+	productGroup.DELETE("/multiple", productHandler.DelMultipleProducts, m.RoleRequired(enum.ADMIN))
 
-	productGroup.PUT("/:uuid", productHandler.UpdateProductByUUID)
-	productGroup.POST("/add", productHandler.AddProduct)
+	productGroup.PUT("/:uuid", productHandler.UpdateProductByUUID, m.RoleRequired(enum.ADMIN))
+	productGroup.POST("/add", productHandler.AddProduct, m.RoleRequired(enum.ADMIN))
 
 	addr := net.JoinHostPort(config.Cfg.AppHost, strconv.Itoa(config.Cfg.AppPort))
 	if err := e.Start(addr); err != nil && !errors.Is(err, http.ErrServerClosed) {
