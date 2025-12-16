@@ -86,6 +86,7 @@ func (r *ProductRepository) GetListProduct() ([]model.ProductModel, error) {
 			P.UPDATED_BY
 		FROM SHOP.PRODUCTS P
 		LEFT JOIN SHOP.PRODUCT_TYPES PT ON PT.ID = P.PRODUCT_TYPE_ID
+		WHERE 1=1
 	`)
 
 	if err != nil {
@@ -124,4 +125,65 @@ func (r *ProductRepository) GetListProduct() ([]model.ProductModel, error) {
 	}
 
 	return products, nil
+}
+
+func (r *ProductRepository) UpdateProduct(
+	id []byte,
+	sku *string,
+	name *string,
+	stock *int,
+	productTypeID *int,
+) error {
+
+	query := "UPDATE SHOP.PRODUCTS SET "
+	args := make([]any, 0)
+	i := 1
+
+	if sku != nil {
+		query += "SKU = :" + strconv.Itoa(i) + ", "
+		args = append(args, *sku)
+		i++
+	}
+
+	if name != nil {
+		query += "NAME = :" + strconv.Itoa(i) + ", "
+		args = append(args, *name)
+		i++
+	}
+
+	if stock != nil {
+		query += "STOCK = :" + strconv.Itoa(i) + ", "
+		args = append(args, *stock)
+		i++
+	}
+
+	if productTypeID != nil {
+		query += "PRODUCT_TYPE_ID = :" + strconv.Itoa(i) + ", "
+		args = append(args, *productTypeID)
+		i++
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query += "UPDATED_AT = SYSTIMESTAMP "
+	query += "WHERE ID = :" + strconv.Itoa(i)
+	args = append(args, id)
+
+	res, err := r.db.Exec(query, args...)
+	if err != nil {
+		return err
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }

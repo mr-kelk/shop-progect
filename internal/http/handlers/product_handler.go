@@ -54,9 +54,41 @@ func (h *ProductHandler) DelProductByUUID(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-func (*ProductHandler) UpdateProductByUUID(c echo.Context) error {
-	uuid := c.Param("uuid")
-	return c.String(http.StatusOK, "product "+uuid)
+func (h *ProductHandler) UpdateProductByUUID(c echo.Context) error {
+	id := c.Param("uuid")
+
+	req := new(dto.UpdateProduct)
+
+	if err := c.Bind(req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request body"})
+	}
+
+	if err := c.Validate(req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"validation_error": err.Error(),
+		})
+	}
+
+	err := h.product.UpdateProduct(
+		id,
+		req.SKU,
+		req.Name,
+		req.Stock,
+		req.ProductTypeID,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return c.JSON(http.StatusNotFound, echo.Map{
+				"error": "product not found",
+			})
+		}
+
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.String(http.StatusOK, "OK")
 }
 
 func (h *ProductHandler) DelMultipleProducts(c echo.Context) error {
@@ -83,8 +115,6 @@ func (h *ProductHandler) DelMultipleProducts(c echo.Context) error {
 	return c.JSON(http.StatusOK, echo.Map{
 		"deleted": deleted,
 	})
-
-	return c.String(http.StatusOK, "product ")
 }
 
 func (h *ProductHandler) AddProduct(c echo.Context) error {

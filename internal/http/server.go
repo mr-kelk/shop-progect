@@ -54,8 +54,10 @@ func StartHttp() {
 	productGroup := e.Group("/product", m.AuthRequired)
 	productGroup.GET("/list", productHandler.GetProducts)
 	productGroup.GET("/:uuid", productHandler.GetProductByUUID)
+
 	productGroup.DELETE("/:uuid", productHandler.DelProductByUUID)
 	productGroup.DELETE("/multiple", productHandler.DelMultipleProducts)
+
 	productGroup.PUT("/:uuid", productHandler.UpdateProductByUUID)
 	productGroup.POST("/add", productHandler.AddProduct)
 

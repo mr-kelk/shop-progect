@@ -59,6 +59,27 @@ func (s *ProductService) DeleteMultipleProducts(ids []string) (int64, error) {
 	return s.product.DelMultipleProducts(binaries)
 }
 
+func (s *ProductService) UpdateProduct(
+	id string,
+	sku *string,
+	name *string,
+	stock *int,
+	productTypeID *int,
+) error {
+
+	productUUID, err := uuid.Parse(id)
+	if err != nil {
+		return errors.New("invalid product uuid")
+	}
+
+	idBinary, err := productUUID.MarshalBinary()
+	if err != nil {
+		return err
+	}
+
+	return s.product.UpdateProduct(idBinary, sku, name, stock, productTypeID)
+}
+
 func (s *ProductService) CreateProduct(sku string, name string, stock int, productTypeId int, createdBy string) error {
 
 	createdByUUIDText, err := uuid.Parse(createdBy)
