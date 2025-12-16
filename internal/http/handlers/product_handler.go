@@ -20,7 +20,22 @@ func NewProductHandler(product *service.ProductService) *ProductHandler {
 }
 
 func (h *ProductHandler) GetProducts(c echo.Context) error {
-	products, err := h.product.GetListProduct()
+	//sku := c.QueryParam("sku")
+	//name := c.QueryParam("name")
+
+	quer := new(dto.ProductQuery)
+
+	if err := c.Bind(quer); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request body"})
+	}
+
+	if err := c.Validate(quer); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"validation_error": err.Error(),
+		})
+	}
+
+	products, err := h.product.GetListProduct(quer.SKU, quer.Name)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": err.Error(),
@@ -30,9 +45,18 @@ func (h *ProductHandler) GetProducts(c echo.Context) error {
 	return c.JSON(http.StatusOK, products)
 }
 
-func (*ProductHandler) GetProductByUUID(c echo.Context) error {
-	uuid := c.Param("uuid")
-	return c.String(http.StatusOK, "product "+uuid)
+func (h *ProductHandler) GetProductByUUID(c echo.Context) error {
+	id := c.Param("uuid")
+
+	product, err := h.product.GetProductByUUID(id)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, product)
 }
 
 func (h *ProductHandler) DelProductByUUID(c echo.Context) error {

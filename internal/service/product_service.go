@@ -1,11 +1,11 @@
 package service
 
 import (
+	"database/sql"
 	"errors"
 	"example/shop-progect/internal/model"
 	"example/shop-progect/internal/repository"
-
-	"github.com/google/uuid"
+	"example/shop-progect/pkg/uuidutil"
 )
 
 type ProductService struct {
@@ -16,8 +16,30 @@ func NewProductService(repo *repository.ProductRepository) *ProductService {
 	return &ProductService{product: repo}
 }
 
-func (s *ProductService) GetListProduct() ([]model.ProductModel, error) {
-	products, err := s.product.GetListProduct()
+func (s *ProductService) GetProductByUUID(id string) (*model.ProductModel, error) {
+	bin, err := uuidutil.ParseToBinary(id)
+	if err != nil {
+		return nil, err
+	}
+
+	products, err := s.product.GetListProduct(&bin, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(products) == 0 {
+		return nil, sql.ErrNoRows
+	}
+
+	return &products[0], nil
+}
+
+func (s *ProductService) GetListProduct(
+	sku *string,
+	name *string,
+) ([]model.ProductModel, error) {
+
+	products, err := s.product.GetListProduct(nil, sku, name)
 	if err != nil {
 		return nil, err
 	}
@@ -26,34 +48,23 @@ func (s *ProductService) GetListProduct() ([]model.ProductModel, error) {
 }
 
 func (s *ProductService) DeleteProduct(id string) error {
-	uuidParsed, err := uuid.Parse(id)
-	if err != nil {
-		return errors.New("invalid product id")
-	}
-
-	idBinary, err := uuidParsed.MarshalBinary()
+	bin, err := uuidutil.ParseToBinary(id)
 	if err != nil {
 		return err
 	}
 
-	return s.product.DelProduct(idBinary)
+	return s.product.DelProduct(bin)
 }
 
 func (s *ProductService) DeleteMultipleProducts(ids []string) (int64, error) {
 	binaries := make([][]byte, 0, len(ids))
 
 	for _, id := range ids {
-		u, err := uuid.Parse(id)
-		if err != nil {
-			return 0, errors.New("invalid uuid: " + id)
-		}
-
-		b, err := u.MarshalBinary()
+		bin, err := uuidutil.ParseToBinary(id)
 		if err != nil {
 			return 0, err
 		}
-
-		binaries = append(binaries, b)
+		binaries = append(binaries, bin)
 	}
 
 	return s.product.DelMultipleProducts(binaries)
@@ -67,30 +78,19 @@ func (s *ProductService) UpdateProduct(
 	productTypeID *int,
 ) error {
 
-	productUUID, err := uuid.Parse(id)
-	if err != nil {
-		return errors.New("invalid product uuid")
-	}
-
-	idBinary, err := productUUID.MarshalBinary()
+	bin, err := uuidutil.ParseToBinary(id)
 	if err != nil {
 		return err
 	}
 
-	return s.product.UpdateProduct(idBinary, sku, name, stock, productTypeID)
+	return s.product.UpdateProduct(bin, sku, name, stock, productTypeID)
 }
 
 func (s *ProductService) CreateProduct(sku string, name string, stock int, productTypeId int, createdBy string) error {
 
-	createdByUUIDText, err := uuid.Parse(createdBy)
+	createdByBin, err := uuidutil.ParseToBinary(createdBy)
 
-	if err != nil {
-		return errors.New("product add product error")
-	}
-
-	createdByUUIDBinary, _ := createdByUUIDText.MarshalBinary()
-
-	err = s.product.AddProduct(sku, name, stock, productTypeId, "", createdByUUIDBinary)
+	err = s.product.AddProduct(sku, name, stock, productTypeId, "", createdByBin)
 
 	if err != nil {
 		return errors.New("product add product error")

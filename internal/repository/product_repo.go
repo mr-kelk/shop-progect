@@ -70,8 +70,13 @@ func (r *ProductRepository) DelMultipleProducts(ids [][]byte) (int64, error) {
 	return result.RowsAffected()
 }
 
-func (r *ProductRepository) GetListProduct() ([]model.ProductModel, error) {
-	rows, err := r.db.Query(`
+func (r *ProductRepository) GetListProduct(
+	id *[]byte,
+	sku *string,
+	name *string,
+) ([]model.ProductModel, error) {
+
+	query := `
 		SELECT
 			P.ID,
 			P.SKU,
@@ -87,20 +92,40 @@ func (r *ProductRepository) GetListProduct() ([]model.ProductModel, error) {
 		FROM SHOP.PRODUCTS P
 		LEFT JOIN SHOP.PRODUCT_TYPES PT ON PT.ID = P.PRODUCT_TYPE_ID
 		WHERE 1=1
-	`)
+	`
 
+	args := make([]any, 0)
+	idx := 1
+
+	if id != nil {
+		query += " AND P.ID = :" + strconv.Itoa(idx)
+		args = append(args, *id)
+		idx++
+	}
+
+	if sku != nil {
+		query += " AND LOWER(P.SKU) LIKE LOWER(:" + strconv.Itoa(idx) + ")"
+		args = append(args, "%"+*sku+"%")
+		idx++
+	}
+
+	if name != nil {
+		query += " AND LOWER(P.NAME) LIKE LOWER(:" + strconv.Itoa(idx) + ")"
+		args = append(args, "%"+*name+"%")
+		idx++
+	}
+
+	rows, err := r.db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
-
 	defer rows.Close()
 
-	products := make([]model.ProductModel, 0)
+	var products []model.ProductModel
 
 	for rows.Next() {
 		var p model.ProductModel
-
-		err := rows.Scan(
+		if err := rows.Scan(
 			&p.ID,
 			&p.SKU,
 			&p.Name,
@@ -112,8 +137,7 @@ func (r *ProductRepository) GetListProduct() ([]model.ProductModel, error) {
 			&p.UpdatedAt,
 			&p.CreatedBy,
 			&p.UpdatedBy,
-		)
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
 
