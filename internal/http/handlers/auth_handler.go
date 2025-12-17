@@ -25,9 +25,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 	}
 
 	if err := c.Validate(req); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"validation_error": err.Error(),
-		})
+		return err
 	}
 
 	user, err := h.auth.Login(req.Email, req.Password)
@@ -53,9 +51,7 @@ func (h *AuthHandler) Registration(c echo.Context) error {
 	}
 
 	if err := c.Validate(req); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"validation_error": err.Error(),
-		})
+		return err
 	}
 
 	user, err := h.auth.Register(req.Login, req.Email, req.Password)

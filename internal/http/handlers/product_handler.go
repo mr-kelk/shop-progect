@@ -20,22 +20,18 @@ func NewProductHandler(product *service.ProductService) *ProductHandler {
 }
 
 func (h *ProductHandler) GetProducts(c echo.Context) error {
-	//sku := c.QueryParam("sku")
-	//name := c.QueryParam("name")
+	query := new(dto.ProductQuery)
 
-	quer := new(dto.ProductQuery)
-
-	if err := c.Bind(quer); err != nil {
+	if err := c.Bind(query); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request body"})
 	}
 
-	if err := c.Validate(quer); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"validation_error": err.Error(),
-		})
+	if err := c.Validate(query); err != nil {
+		return err
 	}
 
-	products, err := h.product.GetListProduct(quer.SKU, quer.Name)
+	products, err := h.product.GetListProduct(query.SKU, query.Name)
+
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": err.Error(),
@@ -88,9 +84,7 @@ func (h *ProductHandler) UpdateProductByUUID(c echo.Context) error {
 	}
 
 	if err := c.Validate(req); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"validation_error": err.Error(),
-		})
+		return err
 	}
 
 	err := h.product.UpdateProduct(
@@ -123,9 +117,7 @@ func (h *ProductHandler) DelMultipleProducts(c echo.Context) error {
 	}
 
 	if err := c.Validate(req); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"validation_error": err.Error(),
-		})
+		return err
 	}
 
 	deleted, err := h.product.DeleteMultipleProducts(req.IDs)
@@ -149,9 +141,7 @@ func (h *ProductHandler) AddProduct(c echo.Context) error {
 	}
 
 	if err := c.Validate(req); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"validation_error": err.Error(),
-		})
+		return err
 	}
 
 	user := c.Get("authUser").(*model.UserSess)

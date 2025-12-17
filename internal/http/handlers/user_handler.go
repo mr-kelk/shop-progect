@@ -9,5 +9,5 @@ import (
 
 func GetAuthUser(c echo.Context) error {
 	userAny := c.Get("authUser").(*model.UserSess)
-	return c.JSON(http.StatusOK, userAny.ID)
+	return c.JSON(http.StatusOK, userAny)
 }
