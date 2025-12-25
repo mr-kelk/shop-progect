@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"example/shop-progect/internal/database"
 	"example/shop-progect/internal/model"
 )
 
@@ -40,7 +41,7 @@ func (r *UserRepository) GetUserByEmail(email string) (*model.UserModel, error) 
     `, email).Scan(&userModel.ID, &userModel.Login, &userModel.Email, &userModel.Password, &userModel.RoleName)
 
 	if err != nil {
-		return nil, err
+		return nil, database.MapDBError(err)
 	}
 
 	return &userModel, nil
@@ -48,5 +49,5 @@ func (r *UserRepository) GetUserByEmail(email string) (*model.UserModel, error) 
 
 func (r *UserRepository) CreateUser(login string, email string, password string, roleId int) error {
 	_, err := r.db.Exec(`INSERT INTO SHOP.USERS (LOGIN, EMAIL, PASSWORD, ROLE_ID) VALUES (:1, :2, :3, :4)`, login, email, password, roleId)
-	return err
+	return database.MapDBError(err)
 }

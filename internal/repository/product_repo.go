@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"example/shop-progect/internal/database"
 	"example/shop-progect/internal/model"
 	"strconv"
 )
@@ -20,7 +21,7 @@ func (r *ProductRepository) AddProduct(sku string, name string, stock int, produ
     VALUES (:1, :2, :3, :4, :5, :6)
 `, sku, name, stock, productTypeId, imageUrl, createdBy)
 
-	return err
+	return database.MapDBError(err)
 }
 
 func (r *ProductRepository) DelProduct(id []byte) error {
@@ -30,12 +31,12 @@ func (r *ProductRepository) DelProduct(id []byte) error {
 	`, id)
 
 	if err != nil {
-		return err
+		return database.MapDBError(err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return err
+		return database.MapDBError(err)
 	}
 
 	if rowsAffected == 0 {
@@ -64,7 +65,7 @@ func (r *ProductRepository) DelMultipleProducts(ids [][]byte) (int64, error) {
 
 	result, err := r.db.Exec(query, args...)
 	if err != nil {
-		return 0, err
+		return 0, database.MapDBError(err)
 	}
 
 	return result.RowsAffected()
@@ -145,7 +146,7 @@ func (r *ProductRepository) GetListProduct(
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, database.MapDBError(err)
 	}
 
 	return products, nil
@@ -197,12 +198,12 @@ func (r *ProductRepository) UpdateProduct(
 
 	res, err := r.db.Exec(query, args...)
 	if err != nil {
-		return err
+		return database.MapDBError(err)
 	}
 
 	affected, err := res.RowsAffected()
 	if err != nil {
-		return err
+		return database.MapDBError(err)
 	}
 
 	if affected == 0 {
