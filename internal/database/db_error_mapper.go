@@ -1,5 +1,6 @@
 package database
 
+//TODO: Доделать когда будет свободное время на выходных
 import (
 	"database/sql"
 	"errors"
